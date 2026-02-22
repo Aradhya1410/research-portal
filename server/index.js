@@ -1,100 +1,69 @@
+
+
+
 const express = require("express");
 const cors = require("cors");
-const multer = require("multer");
-const pdfParse = require("pdf-parse");
-const fs = require("fs");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-const multer = require("multer");
+// Home route
 app.get("/", (req, res) => {
-    res.send("Server running 🚀");
+    res.send("Server running on Vercel 🚀");
 });
 
-// ---------- TEXT ANALYSIS FUNCTION ----------
-
+// Text analysis function
 function analyzeText(text) {
-    if (!text || text.trim().length < 50) {
+    if (!text || text.trim().length < 20) {
         return {
             tone: "Neutral",
             confidenceLevel: "Low",
-            positives: ["Text extraction limited or document may be scanned."],
-            concerns: ["Low text readability detected."],
-            forwardGuidance: ["Not mentioned in transcript"],
-            capacityUtilization: ["Not mentioned in transcript"],
-            growthInitiatives: ["Not mentioned in transcript"]
+            positives: ["Text too short for proper analysis"],
+            concerns: ["Insufficient data"],
+            forwardGuidance: ["Not available"],
+            capacityUtilization: ["Not available"],
+            growthInitiatives: ["Not available"]
         };
     }
 
-    const lowerText = text.toLowerCase();
-    const sentences = text.split(/[.!?]\s+/).filter(s => s.trim().length > 40);
-
-    const positiveKeywords = ["growth", "strong", "increase", "improved", "record", "expansion", "profit", "positive", "momentum"];
-    const concernKeywords = ["decline", "risk", "challenge", "pressure", "uncertain", "slowdown", "weak", "loss"];
-    const guidanceKeywords = ["revenue", "margin", "capex", "guidance", "outlook", "forecast"];
-    const capacityKeywords = ["capacity", "utilization", "production", "output"];
-    const growthKeywords = ["new project", "launch", "expansion", "investment", "initiative", "acquisition"];
-
-    const positives = sentences.filter(s =>
-        positiveKeywords.some(word => s.toLowerCase().includes(word))
-    ).slice(0, 5);
-
-    const concerns = sentences.filter(s =>
-        concernKeywords.some(word => s.toLowerCase().includes(word))
-    ).slice(0, 5);
-
-    const forwardGuidance = sentences.filter(s =>
-        guidanceKeywords.some(word => s.toLowerCase().includes(word))
-    ).slice(0, 5);
-
-    const capacityUtilization = sentences.filter(s =>
-        capacityKeywords.some(word => s.toLowerCase().includes(word))
-    ).slice(0, 3);
-
-    const growthInitiatives = sentences.filter(s =>
-        growthKeywords.some(word => s.toLowerCase().includes(word))
-    ).slice(0, 3);
+    const lower = text.toLowerCase();
 
     let tone = "Neutral";
-    if (positives.length > concerns.length) tone = "Optimistic";
-    if (concerns.length > positives.length) tone = "Cautious";
-
-    let confidenceLevel = "Medium";
-    if (text.length > 5000) confidenceLevel = "High";
-    if (text.length < 1000) confidenceLevel = "Low";
+    if (lower.includes("growth") || lower.includes("profit")) {
+        tone = "Optimistic";
+    }
+    if (lower.includes("risk") || lower.includes("loss")) {
+        tone = "Cautious";
+    }
 
     return {
         tone,
-        confidenceLevel,
-        positives: positives.length ? positives : ["Not clearly mentioned"],
-        concerns: concerns.length ? concerns : ["No major concerns explicitly stated"],
-        forwardGuidance: forwardGuidance.length ? forwardGuidance : ["Not mentioned in transcript"],
-        capacityUtilization: capacityUtilization.length ? capacityUtilization : ["Not mentioned in transcript"],
-        growthInitiatives: growthInitiatives.length ? growthInitiatives : ["Not mentioned in transcript"]
+        confidenceLevel: "Medium",
+        positives: ["Basic keyword-based analysis completed"],
+        concerns: ["Manual review recommended"],
+        forwardGuidance: ["Future outlook depends on context"],
+        capacityUtilization: ["Not specifically mentioned"],
+        growthInitiatives: ["Not specifically mentioned"]
     };
 }
 
-// ---------- PDF UPLOAD ROUTE ----------
-app.post("/upload", upload.single("file"), async (req, res) => {
+// POST route (NO file upload)
+app.post("/upload", (req, res) => {
     try {
-        const filePath = req.file.path;
+        const { text } = req.body;
 
-        const dataBuffer = fs.readFileSync(filePath);
-        const pdfData = await pdfParse(dataBuffer);
-
-        const analysis = analyzeText(pdfData.text);
-
+        const result = analyzeText(text);
 
         res.json({
-            message: "PDF processed successfully",
-            analysis
+            message: "Analysis successful",
+            analysis: result
         });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed to process PDF" });
+        res.status(500).json({ error: "Server error" });
     }
 });
+
 module.exports = app;
