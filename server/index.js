@@ -9,8 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const upload = multer({ dest: "uploads/" });
-
+const multer = require("multer");
 app.get("/", (req, res) => {
     res.send("Server running 🚀");
 });
