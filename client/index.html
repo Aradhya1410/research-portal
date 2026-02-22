@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PDF Upload</title>
+</head>
+
+<body>
+    <h2>Upload PDF</h2>
+
+    <form id="uploadForm">
+        <input type="file" id="fileInput" accept="application/pdf" />
+        <button type="submit">Upload</button>
+    </form>
+
+    <script>
+        const form = document.getElementById("uploadForm");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const file = document.getElementById("fileInput").files[0];
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch("http://localhost:5000/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            alert(JSON.stringify(data));
+        });
+    </script>
+</body>
+
+</html>
